@@ -11,21 +11,19 @@ import java.util.Arrays;
 
 public class MainActivity extends AppCompatActivity {
 
+    private static final int X = 0;
+    private static final int O = 1;
+    private static final int empty = 2;
+
     private static Button restButton;
-    private static  ImageView gameStatusImage;
+    private static ImageView gameStatusImage;
 
     private static int counter = 0;
     private static boolean gameActive = true;
-    // Player representation
-    // 0 - X
-    // 1 - O
-    private static int activePlayer = 0;
-    private static int[] gameState = {2, 2, 2, 2, 2, 2, 2, 2, 2};
-    // State meanings:
-    //    0 - X
-    //    1 - O
-    //    2 - Null
-    // put all win positions in a 2D array
+
+    private static int activePlayer = X;
+    private static int[] gameState = {empty, empty, empty, empty, empty, empty, empty, empty, empty};
+
     private static int[][] winPositions = {{0, 1, 2},
                                            {3, 4, 5},
                                            {6, 7, 8},
@@ -35,34 +33,26 @@ public class MainActivity extends AppCompatActivity {
                                            {0, 4, 8},
                                            {2, 4, 6}};
 
-
     public void playerTap(View view) {
         ImageView img = (ImageView) view;
         int tappedImage = Integer.parseInt(img.getTag().toString()) - 1;
 
-        if (!gameActive) {
-            gameReset(view);
-        }
-
-        if (gameState[tappedImage] == 2) {
+        if (gameState[tappedImage] == empty && gameActive) {
             counter++;
 
             if (counter == 9) {
                 gameActive = false;
             }
 
-            // mark this position
             gameState[tappedImage] = activePlayer;
 
-            if (activePlayer == 0) {
+            if (activePlayer == X) {
                 img.setImageResource(R.drawable.x);
-                activePlayer = 1;
+                activePlayer = O;
                 gameStatusImage.setImageResource(R.drawable.oplay);
             } else {
-                // set the image of o
                 img.setImageResource(R.drawable.o);
-                activePlayer = 0;
-
+                activePlayer = X;
                 gameStatusImage.setImageResource(R.drawable.xplay);
             }
         }
@@ -74,23 +64,14 @@ public class MainActivity extends AppCompatActivity {
                 gameState[winPosition[1]] == gameState[winPosition[2]] && gameState[winPosition[0]] != 2) {
                 flag = 1;
 
-                // Somebody has won! - Find out who!
-                String winnerStr;
-
                 int winner;
 
-                // game reset function be called
                 gameActive = false;
                 if (gameState[winPosition[0]] == 0) {
-                    winnerStr = "X has won";
                     winner =  R.drawable.xwin;
                 } else {
-                    winnerStr = "O has won";
                     winner = R.drawable.owin;
                 }
-                // Update the status bar for winner announcement
-//                TextView status = findViewById(R.id.status);
-//                status.setText(winnerStr);
                 gameStatusImage.setImageResource(winner);
                 restButton.setVisibility(View.VISIBLE);
             }
@@ -104,7 +85,7 @@ public class MainActivity extends AppCompatActivity {
 
     public void gameReset(View view) {
         gameActive = true;
-        activePlayer = 0;
+        activePlayer = X;
         counter = 0;
 
         Arrays.fill(gameState, 2);
