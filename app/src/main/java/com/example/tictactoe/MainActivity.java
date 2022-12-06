@@ -11,84 +11,91 @@ import java.util.Arrays;
 
 public class MainActivity extends AppCompatActivity {
 
-    private static final int X = 0;
-    private static final int O = 1;
-    private static final int empty = 2;
+    // region final variables
 
-    private static Button restButton;
-    private static ImageView gameStatusImage;
+    private static final int X_PLAYER = 0;
+    private static final int O_PLAYER = 1;
+    private static final int EMPTY = 2;
+    private static final int CELLS_COUNT = 9;
+    private static final int[][] WIN_POSITIONS = {{0, 1, 2},
+                                                  {3, 4, 5},
+                                                  {6, 7, 8},
+                                                  {0, 3, 6},
+                                                  {1, 4, 7},
+                                                  {2, 5, 8},
+                                                  {0, 4, 8},
+                                                  {2, 4, 6}};
 
-    private static int counter = 0;
-    private static boolean gameActive = true;
+    // endregion
 
-    private static int activePlayer = X;
-    private static int[] gameState = {empty, empty, empty, empty, empty, empty, empty, empty, empty};
+    // region Fields
 
-    private static int[][] winPositions = {{0, 1, 2},
-                                           {3, 4, 5},
-                                           {6, 7, 8},
-                                           {0, 3, 6},
-                                           {1, 4, 7},
-                                           {2, 5, 8},
-                                           {0, 4, 8},
-                                           {2, 4, 6}};
+    private int counter;
+    private int[] gameState;
+    private int activePlayer;
+    private Button restButton;
+    private boolean gameActive;
+    private ImageView gameStatusImage;
 
-    public void playerTap(View view) {
+    // endregion
+
+    // region Public Methods
+
+    public void cellPressed(View view) {
         ImageView img = (ImageView) view;
         int tappedImage = Integer.parseInt(img.getTag().toString()) - 1;
 
-        if (gameState[tappedImage] == empty && gameActive) {
-            counter++;
-
-            if (counter == 9) {
-                gameActive = false;
-            }
-
-            gameState[tappedImage] = activePlayer;
-
-            if (activePlayer == X) {
-                img.setImageResource(R.drawable.x);
-                activePlayer = O;
-                gameStatusImage.setImageResource(R.drawable.oplay);
-            } else {
-                img.setImageResource(R.drawable.o);
-                activePlayer = X;
-                gameStatusImage.setImageResource(R.drawable.xplay);
-            }
+        if (!gameActive || gameState[tappedImage] != EMPTY) {
+            return;
         }
 
-        int flag = 0;
+        counter++;
+        gameState[tappedImage] = activePlayer;
 
-        for (int[] winPosition : winPositions) {
+        if (activePlayer == X_PLAYER) {
+            img.setImageResource(R.drawable.x);
+            activePlayer = O_PLAYER;
+            gameStatusImage.setImageResource(R.drawable.oplay);
+        } else {
+            img.setImageResource(R.drawable.o);
+            activePlayer = X_PLAYER;
+            gameStatusImage.setImageResource(R.drawable.xplay);
+        }
+
+        for (int[] winPosition : WIN_POSITIONS) {
             if (gameState[winPosition[0]] == gameState[winPosition[1]] &&
-                gameState[winPosition[1]] == gameState[winPosition[2]] && gameState[winPosition[0]] != 2) {
-                flag = 1;
-
+                gameState[winPosition[1]] == gameState[winPosition[2]] && gameState[winPosition[0]] != EMPTY) {
                 int winner;
-
                 gameActive = false;
-                if (gameState[winPosition[0]] == 0) {
+                if (gameState[winPosition[0]] == X_PLAYER) {
                     winner =  R.drawable.xwin;
                 } else {
                     winner = R.drawable.owin;
                 }
                 gameStatusImage.setImageResource(winner);
                 restButton.setVisibility(View.VISIBLE);
+
+                return;
             }
         }
 
-        if (counter == 9 && flag == 0) {
+        if (counter == CELLS_COUNT) {
+            gameActive = false;
             gameStatusImage.setImageResource(R.drawable.nowin);
             restButton.setVisibility(View.VISIBLE);
         }
     }
 
-    public void gameReset(View view) {
+    // endregion
+
+    //  region Private Methods
+
+    private void gameReset(View view) {
         gameActive = true;
-        activePlayer = X;
+        activePlayer = X_PLAYER;
         counter = 0;
 
-        Arrays.fill(gameState, 2);
+        Arrays.fill(gameState, EMPTY);
 
         ((ImageView) findViewById(R.id.imageView)).setImageResource(R.drawable.empty);
         ((ImageView) findViewById(R.id.imageView2)).setImageResource(R.drawable.empty);
@@ -103,16 +110,22 @@ public class MainActivity extends AppCompatActivity {
         gameStatusImage.setImageResource(R.drawable.xplay);
     }
 
+    // endregion
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        counter = 0;
+        gameActive = true;
+        activePlayer = X_PLAYER;
+        gameState = new int[CELLS_COUNT];
+        Arrays.fill(gameState, EMPTY);
         gameStatusImage = findViewById(R.id.gameStatusLabel_btn);
         restButton = findViewById(R.id.reset_btn);
 
         restButton.setVisibility((View.GONE));
-
         restButton.setOnClickListener(view -> {
             gameReset(view);
             restButton.setVisibility((View.GONE));
